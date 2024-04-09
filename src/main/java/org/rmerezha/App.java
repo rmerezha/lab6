@@ -59,8 +59,8 @@ public class App extends Application {
         }
 
         int size = matrix.length;
-        for (int j = 0; i < size; i++) {
-            System.out.println(Arrays.toString(matrix[i]));
+        for (int j = 0; j < size; j++) {
+            System.out.println(Arrays.toString(matrix[j]));
         }
 
         setDefaultSettings(stage);
