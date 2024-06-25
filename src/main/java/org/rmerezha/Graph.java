@@ -1,6 +1,7 @@
 package org.rmerezha;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
 
@@ -28,7 +29,18 @@ public final class Graph {
 
 
     public double generateK() {
-        return 1.0 - n3 * 0.02 - n4 * 0.005 - 0.25;
+        return 1.0 - n3 * 0.01 - n4 * 0.005 - 0.05;
+    }
+
+    public static void main(String[] args) {
+        Graph graph = new Graph(3414);
+        double[][] matrix = graph.generatedAdjacencyMatrix(11);
+        double[][] weightedGraph = GraphUtils.createWeightedGraph(matrix);
+        List<Edge> edges = EdgeMapper.mapToEdges(weightedGraph);
+        var collectionEdge = new CollectionEdge(11);
+        edges.forEach(e -> collectionEdge.addEdge(e.getSrc(), e.getDest(), e.getWeight()));
+        List<Edge> edges1 = KruskalAlgorithm.kruskalMST(collectionEdge);
+        System.out.println(edges1);
     }
 
 
@@ -41,10 +53,6 @@ public final class Graph {
 
     }
 
-    public static void main(String[] args) {
-        Graph graph = new Graph(3414);
-        graph.generatedAdjacencyMatrix(11);
-    }
 
 
     public double[][] generatedAdjacencyMatrix(int size) {
@@ -77,9 +85,8 @@ public final class Graph {
 
     }
 
-    public void printMatrix() {
-        Arrays.stream(matrix).forEach(e -> System.out.println(Arrays.toString(e)));
-    }
+
+
 
 
 }

@@ -3,6 +3,7 @@ package org.rmerezha;
 import javafx.application.Application;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -11,10 +12,8 @@ import javafx.scene.shape.*;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class App extends Application {
@@ -40,33 +39,58 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
-
-        System.out.println("Enter 0 or 1:");
-        Scanner sc = new Scanner(System.in);
-
-        int i = sc.nextInt();
-
         List<Point> points = drawCircles();
         Graph graph = new Graph(3414);
         double[][] matrix = graph.generatedAdjacencyMatrix(NUM_CIRCLES);
 
-        if (i == 1) {
-            drawOrientedGraphs(matrix, points);
-        } else if (i == 0) {
-            drawNonOrientedGraphs(matrix, points);
-        } else {
-            throw new IllegalArgumentException();
-        }
+        double[][] weightedGraph = GraphUtils.createWeightedGraph(matrix);
 
+        List<Edge> edges = EdgeMapper.mapToEdges(weightedGraph);
+        var collectionEdge = new CollectionEdge(11);
+        edges.forEach(e -> collectionEdge.addEdge(e.getSrc(), e.getDest(), e.getWeight()));
+        List<Edge> edges1 = KruskalAlgorithm.kruskalMST(collectionEdge);
+
+        Deque<Action> actions = drawEdges(edges1, points);
+        Button button = new Button();
+        button.setText("next");
+        AtomicInteger count = new AtomicInteger();
+        button.setOnAction(event -> {
+            actions.pop().doit();
+            System.out.println(edges1.get(count.getAndIncrement()));
+        });
+
+
+        System.out.println("matrix:");
         int size = matrix.length;
         for (int j = 0; j < size; j++) {
             System.out.println(Arrays.toString(matrix[j]));
         }
 
+
+        System.out.println("Weighted matrix:");
+        int size1 = weightedGraph.length;
+        for (int j = 0; j < size1; j++) {
+            System.out.println(Arrays.toString(weightedGraph[j]));
+        }
+
+        System.out.println("kruskal algorithm result:");
+
+        PANE.getChildren().add(button);
         setDefaultSettings(stage);
         stage.show();
 
     }
+
+
+    private Deque<Action> drawEdges(List<Edge> edges, List<Point> points) {
+        Deque<Action> actions = new ArrayDeque<>();
+        edges.forEach(e -> {
+            actions.add(() ->
+                    drawArc(points, e.getSrc() + 1, e.getDest() + 1, false));
+        });
+        return actions;
+    }
+
 
     private void drawNonOrientedGraphs(double[][] matrix, List<Point> points) {
 
@@ -87,7 +111,6 @@ public class App extends Application {
 
             }
         }
-
 
 
     }
@@ -233,7 +256,6 @@ public class App extends Application {
         double x2 = endPoint.x() - arrowSize * Math.cos(angle + angleOffset);
         double y2 = endPoint.y() - arrowSize * Math.sin(angle + angleOffset);
 
-        // Draw the arrowhead
         Path arrowhead = new Path();
         arrowhead.setStroke(Color.BLACK);
         arrowhead.setStrokeWidth(1);
@@ -255,6 +277,7 @@ public class App extends Application {
 
         PANE.getChildren().add(arrowhead);
     }
+
     private int[] distribution(int num) {
         int count = (num - 3) / 3;
 
@@ -318,7 +341,6 @@ public class App extends Application {
 
         path.getElements().add(new MoveTo(p.x() - RADIUS, p.y()));
 
-        // Рисуем окружность
         for (int angle = 1; angle <= 360; angle++) {
             double x = p.x() - 2 * RADIUS + RADIUS * Math.cos(Math.toRadians(angle));
             double y = p.y() + RADIUS * Math.sin(Math.toRadians(angle));
@@ -333,7 +355,6 @@ public class App extends Application {
     private boolean onOneLine(Line line, Point p1, Point p2) {
         return line.contains(p1.x(), p1.y()) && line.contains(p2.x(), p2.y());
     }
-
 
 
 }
