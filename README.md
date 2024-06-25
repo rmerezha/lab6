@@ -6,8 +6,8 @@ cd lab3
 mvn javafx:run
 ```
 
+![](p111.jpg)
 
-![null](ex1.jpg)
 
-![null](ex2.jpg)
+movie: https://youtu.be/INNZwQD22mg
 
